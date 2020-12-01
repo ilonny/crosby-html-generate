@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import { Layout, Menu, Breadcrumb } from "antd";
-
+import { useParams } from "react-router-dom";
 import { Upload, Checkbox } from "antd";
 import {
     LoadingOutlined,
@@ -8,7 +8,7 @@ import {
     DeleteOutlined,
     CopyOutlined,
     EyeOutlined,
-    CodepenOutlined
+    CodepenOutlined,
 } from "@ant-design/icons";
 
 // const { SubMenu } = Menu;
@@ -25,7 +25,7 @@ function getBase64(img, callback) {
     reader.readAsDataURL(img);
 }
 
-export const AddItem = () => {
+export const AddItem = (props) => {
     const initialItem = {
         image: "",
         name: "",
@@ -46,6 +46,17 @@ export const AddItem = () => {
     useEffect(() => {
         setItems([{ ...initialItem }]);
     }, []);
+    const { id } = useParams();
+    console.log("id", id);
+    useEffect(() => {
+        fetch(`${API_HOST}/site/data?id=${id}`)
+            .then((res) => res.json())
+            .then((res) => {
+                if (res.data) {
+                    setItems(JSON.parse(res.data));
+                }
+            });
+    }, [id]);
     const changeItem = (index, key, value) => {
         let oldItems = [...items];
         let item = oldItems[index];
@@ -278,7 +289,15 @@ export const AddItem = () => {
                                                 value={item.buy_link}
                                             />
                                             <input
+                                                value={item.preorder_link}
                                                 placeholder="Preorder link"
+                                                onChange={(e) => {
+                                                    changeItem(
+                                                        index,
+                                                        "preorder_link",
+                                                        e.target.value
+                                                    );
+                                                }}
                                                 style={{
                                                     background: "#F7F7F7",
                                                     flex: 1,
@@ -410,7 +429,17 @@ export const AddItem = () => {
                                 cursor: "pointer",
                                 background: "#FFECEB",
                             }}
-                            onClick={() => {}}
+                            onClick={() => {
+                                if (id) {
+                                    fetch(`${API_HOST}/site/delete?id=${id}`)
+                                        .then((res) => res.json())
+                                        .then((res) => {
+                                            props.history.push("/");
+                                        });
+                                } else {
+                                    props.history.push("/");
+                                }
+                            }}
                         >
                             <DeleteOutlined />
                         </button>
@@ -427,7 +456,7 @@ export const AddItem = () => {
                             onClick={() => {}}
                         >
                             <EyeOutlined />
-                            <span style={{paddingLeft: 10}}>PREVIEW</span>
+                            <span style={{ paddingLeft: 10 }}>PREVIEW</span>
                         </button>
                         <button
                             style={{
@@ -442,7 +471,43 @@ export const AddItem = () => {
                             onClick={() => {}}
                         >
                             <CodepenOutlined />
-                            <span style={{paddingLeft: 10}}>GET CODE</span>
+                            <span style={{ paddingLeft: 10 }}>GET CODE</span>
+                        </button>
+                        <button
+                            style={{
+                                width: 120,
+                                height: 50,
+                                borderRadius: 50,
+                                border: "none",
+                                cursor: "pointer",
+                                background: "#F7F7F7",
+                                marginLeft: 20,
+                            }}
+                            onClick={() => {
+                                fetch(`${API_HOST}/site/save`, {
+                                    method: "POST",
+                                    cors: true,
+                                    body: JSON.stringify({
+                                        data: items,
+                                        id: id ? id : 0,
+                                    }),
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                })
+                                    .then((res) => res.json())
+                                    .then((res) => {
+                                        if (res.id) {
+                                            console.log("redirect");
+                                            alert("successful saved");
+                                            props.history.push(
+                                                "/add-item/" + res.id
+                                            );
+                                        }
+                                    });
+                            }}
+                        >
+                            <span style={{ paddingLeft: 0 }}>SAVE</span>
                         </button>
                     </div>
                 </div>

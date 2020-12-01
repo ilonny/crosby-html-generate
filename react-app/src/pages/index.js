@@ -7,7 +7,7 @@ export const routes = () => [
         component: HomePage,
     },
     {
-        path: "/add-item",
+        path: "/add-item/:id?",
         component: AddItem,
     },
     // {

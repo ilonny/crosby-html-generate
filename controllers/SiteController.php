@@ -3,41 +3,33 @@
 namespace app\controllers;
 
 use Yii;
-use yii\filters\AccessControl;
+// use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\web\Response;
-use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
-
+// use yii\web\Response;
+// use yii\filters\VerbFilter;
+// use app\models\LoginForm;
+// use app\models\ContactForm;
+use app\models\Item;
 class SiteController extends Controller
 {
-    /**
-     * {@inheritdoc}
-     */
+
+    public $enableCsrfValidation = false;
     public function behaviors()
     {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['corsFilter'] = [
+            'class' => \yii\filters\Cors::className(),
+            'cors' => [
+                'Access-Control-Allow-Origin' => ['*'],
+                'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+                'Access-Control-Request-Headers' => ['*'],
+                'Access-Control-Allow-Credentials' => true,
+                'Access-Control-Max-Age' => 86400,
+                'Access-Control-Expose-Headers' => [],
+            ]
         ];
+        return $behaviors;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -64,65 +56,61 @@ class SiteController extends Controller
         return $this->render('index');
     }
 
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+    public function actionUpload() {
+        Yii::$app->response->headers->add('Access-Control-Allow-Origin', 'http://localhost:3000');
+        // $tmp_name = $_FILES['avatar'];
+        // var_dump($_FILES);
+        // $name = basename($_FILES["pictures"]["name"]);
+        // move_uploaded_file($tmp_name, "uploads");
+        // return $this->asJson($tmp_name);
+        $res = [];
+        foreach ($_FILES as $key => $file) {
+            $tmp_name = $file['tmp_name'];
+            $name = basename($file['name']);
+            move_uploaded_file($tmp_name, "uploads/$name");
+            // return $this->asJson(['res' => "uploads/$name"]);
+            return $this->asJson("uploads/$name");
+            // $tmp_name = $file["tmp_name"];
         }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
-        ]);
     }
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
-
-            return $this->refresh();
+    public function actionSave() {
+        $body = json_decode(file_get_contents('php://input'), JSON_UNESCAPED_UNICODE);
+        if ($body['id']) {
+            $model = Item::findOne($body['id']);
+            $model->data = json_encode($body['data']);
+            $model->update();
+            return $this->asJson($model);
+        } else {
+            $model = new Item;
+            $model->data = json_encode($body['data']);
+            $model->save();
+            return $this->asJson($model);
         }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
+        // var_dump($body['data']);
+        // var_dump($body);
+        // var_dump([123 => 333]);
+        // var_dump($body2);
     }
 
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
+    public function actionData($id) {
+        $model = Item::findOne($id);
+        return $this->asJson(['data' => $model->data]);
+        // var_dump($body['data']);
+        // var_dump($body);
+        // var_dump([123 => 333]);
+        // var_dump($body2);
+    }
+
+    public function actionGetAll() {
+        return $this->asJson(Item::find()->all());
+    }
+
+    public function actionDelete($id) {
+        $model = Item::findOne($id);
+        if ($model->delete()) {
+            return $this->asJson(['status' => 'ok']);
+        }
     }
 }

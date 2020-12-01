@@ -2,17 +2,45 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 // import { Layout, Menu, Breadcrumb } from "antd";
 import {
-    // UserOutlined,
-    // LaptopOutlined,
-    // NotificationOutlined,
+    LoadingOutlined,
+    PlusOutlined,
+    DeleteOutlined,
+    CopyOutlined,
+    EyeOutlined,
+    CodepenOutlined,
     SearchOutlined,
 } from "@ant-design/icons";
-
+import { API_HOST } from "../AddItem/AddItem";
 // const { SubMenu } = Menu;
 // const { Header, Content, Sider } = Layout;
 export const HomePage = () => {
     const [searchString, setSearchString] = useState("");
-    useEffect(() => {}, []);
+    const [items, setItems] = useState([]);
+    const getData = () => {
+        fetch(`${API_HOST}/site/get-all`)
+            .then((res) => res.json())
+            .then((res) => {
+                setItems(res);
+            });
+    };
+    useEffect(() => {
+        getData();
+    }, []);
+    useEffect(() => {
+        if (!searchString) {
+            getData();
+        }
+        setItems(
+            items.filter((item) => {
+                let data = JSON.parse(item.data);
+                data = data[0];
+                if (data.name.indexOf(searchString) !== -1) {
+                    return true;
+                }
+            })
+        );
+    }, [searchString]);
+    console.log("items all", items);
     return (
         <>
             <div style={{ maxWidth: 1159, margin: "auto" }}>
@@ -59,6 +87,129 @@ export const HomePage = () => {
                             + NEW PRODUCT
                         </button>
                     </Link>
+                </div>
+                <div>
+                    {items.map((item) => {
+                        let data = JSON.parse(item.data);
+                        data = data[0];
+                        console.log("data", data);
+                        return (
+                            <div key={item.id}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        margin: "20px 0",
+                                        padding: 20,
+                                        boxShadow:
+                                            "0 0 10px 1px rgba(0,0,0,0.2)",
+                                        borderRadius: 10,
+                                    }}
+                                >
+                                    <img
+                                        src={`${API_HOST}/${data.image}`}
+                                        style={{ maxWidth: 100 }}
+                                        alt=""
+                                    />
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            justifyContent: "center",
+                                            paddingLeft: 30,
+                                        }}
+                                    >
+                                        <p>{data.name}</p>
+                                        <p>{data.price}</p>
+                                    </div>
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            justifyContent: "flex-end",
+                                            alignItems: "center",
+                                            display: "flex",
+                                        }}
+                                    >
+                                        <button
+                                            style={{
+                                                width: 50,
+                                                height: 50,
+                                                borderRadius: 50,
+                                                border: "none",
+                                                cursor: "pointer",
+                                                background: "#FFECEB",
+                                            }}
+                                            onClick={() => {
+                                                fetch(
+                                                    `${API_HOST}/site/delete?id=${item.id}`
+                                                )
+                                                    .then((res) => res.json())
+                                                    .then((res) => {
+                                                        getData();
+                                                    });
+                                            }}
+                                        >
+                                            <DeleteOutlined />
+                                        </button>
+                                        <button
+                                            style={{
+                                                width: 120,
+                                                height: 50,
+                                                borderRadius: 50,
+                                                border: "none",
+                                                cursor: "pointer",
+                                                background: "#F7F7F7",
+                                                marginLeft: 20,
+                                            }}
+                                            onClick={() => {}}
+                                        >
+                                            <EyeOutlined />
+                                            <span style={{ paddingLeft: 10 }}>
+                                                PREVIEW
+                                            </span>
+                                        </button>
+                                        <button
+                                            style={{
+                                                width: 120,
+                                                height: 50,
+                                                borderRadius: 50,
+                                                border: "none",
+                                                cursor: "pointer",
+                                                background: "#F7F7F7",
+                                                marginLeft: 20,
+                                            }}
+                                            onClick={() => {}}
+                                        >
+                                            <CodepenOutlined />
+                                            <span style={{ paddingLeft: 10 }}>
+                                                GET CODE
+                                            </span>
+                                        </button>
+                                        <Link to={"/add-item/" + item.id}>
+                                            <button
+                                                style={{
+                                                    width: 120,
+                                                    height: 50,
+                                                    borderRadius: 50,
+                                                    border: "none",
+                                                    cursor: "pointer",
+                                                    background: "#F7F7F7",
+                                                    marginLeft: 20,
+                                                }}
+                                            >
+                                                <span
+                                                    style={{ paddingLeft: 0 }}
+                                                >
+                                                    EDIT
+                                                </span>
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
+                                <hr />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </>
