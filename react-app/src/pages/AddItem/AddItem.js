@@ -66,6 +66,7 @@ export const AddItem = () => {
                                 padding: 20,
                                 boxShadow: "0 0 10px 1px rgba(0,0,0,0.2)",
                                 borderRadius: 10,
+                                marginBottom: 20,
                             }}
                         >
                             <div
@@ -331,6 +332,14 @@ export const AddItem = () => {
                                                     cursor: "pointer",
                                                     background: "#FFECEB",
                                                 }}
+                                                onClick={() => {
+                                                    setItems(
+                                                        items.filter(
+                                                            (item, index_f) =>
+                                                                index_f != index
+                                                        )
+                                                    );
+                                                }}
                                             >
                                                 <DeleteOutlined />
                                             </button>
@@ -344,6 +353,13 @@ export const AddItem = () => {
                                                     background: "#F2F4FF",
                                                     marginLeft: 20,
                                                 }}
+                                                onClick={() => {
+                                                    setItems(
+                                                        items.concat({
+                                                            ...items[index],
+                                                        })
+                                                    );
+                                                }}
                                             >
                                                 <CopyOutlined />
                                             </button>
@@ -354,6 +370,29 @@ export const AddItem = () => {
                         </div>
                     );
                 })}
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <button
+                        onClick={() => {
+                            setItems(items.concat({ ...initialItem }));
+                        }}
+                        style={{
+                            width: 323,
+                            height: 64,
+                            border: "2px dashed #031EE8",
+                            borderRadius: 100,
+                            cursor: "pointer",
+                            background: "#fff",
+                        }}
+                    >
+                        ADD OPTION
+                    </button>
+                </div>
             </div>
         </>
     );
