@@ -7,6 +7,8 @@ import {
     PlusOutlined,
     DeleteOutlined,
     CopyOutlined,
+    EyeOutlined,
+    CodepenOutlined
 } from "@ant-design/icons";
 
 // const { SubMenu } = Menu;
@@ -392,6 +394,57 @@ export const AddItem = () => {
                     >
                         ADD OPTION
                     </button>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "flex-end",
+                        }}
+                    >
+                        <button
+                            style={{
+                                width: 50,
+                                height: 50,
+                                borderRadius: 50,
+                                border: "none",
+                                cursor: "pointer",
+                                background: "#FFECEB",
+                            }}
+                            onClick={() => {}}
+                        >
+                            <DeleteOutlined />
+                        </button>
+                        <button
+                            style={{
+                                width: 120,
+                                height: 50,
+                                borderRadius: 50,
+                                border: "none",
+                                cursor: "pointer",
+                                background: "#F7F7F7",
+                                marginLeft: 20,
+                            }}
+                            onClick={() => {}}
+                        >
+                            <EyeOutlined />
+                            <span style={{paddingLeft: 10}}>PREVIEW</span>
+                        </button>
+                        <button
+                            style={{
+                                width: 120,
+                                height: 50,
+                                borderRadius: 50,
+                                border: "none",
+                                cursor: "pointer",
+                                background: "#F7F7F7",
+                                marginLeft: 20,
+                            }}
+                            onClick={() => {}}
+                        >
+                            <CodepenOutlined />
+                            <span style={{paddingLeft: 10}}>GET CODE</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </>
