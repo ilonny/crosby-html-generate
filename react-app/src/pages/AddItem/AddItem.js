@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 // import { Layout, Menu, Breadcrumb } from "antd";
 import { useParams } from "react-router-dom";
 import { Upload, Checkbox, Modal } from "antd";
+import download from "downloadjs";
+// let download = require('./download.min');
 import {
     LoadingOutlined,
     PlusOutlined,
@@ -496,7 +498,20 @@ export const AddItem = (props) => {
                                 background: "#F7F7F7",
                                 marginLeft: 20,
                             }}
-                            onClick={() => {}}
+                            onClick={() => {
+                                fetch(`${API_HOST}/site/get-html?download=1`, {
+                                    method: "POST",
+                                    cors: true,
+                                    body: JSON.stringify({
+                                        data: items,
+                                    }),
+                                })
+                                    .then((res) => res.blob())
+                                    .then((res) => {
+                                        download(res);
+                                        // console.log("html res", res);
+                                    });
+                            }}
                         >
                             <CodepenOutlined />
                             <span style={{ paddingLeft: 10 }}>GET CODE</span>

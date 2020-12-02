@@ -114,59 +114,90 @@ class SiteController extends Controller
         }
     }
 
-    public function actionGetHtml() {
+    public function actionGetHtml($download = false) {
+        error_reporting(E_ERROR | E_PARSE);
         $body = json_decode(file_get_contents('php://input'), JSON_UNESCAPED_UNICODE);
         $data = $body['data'];
+        // $items = json_decode($data, JSON_UNESCAPED_UNICODE);
+
         $jq = file_get_contents('https://code.jquery.com/jquery-3.5.1.slim.min.js');
         $slick = file_get_contents('https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js');
         $html = '
         <!-- основная обертка контента (белый блок с круглыми границами) -->
         <div class="wrapper">
-            <!-- заголовок айтема -->
-            <p class="item-title">FOLDING SCREEN</p>
-            <p class="price">$120.00</p>
-            <!-- просто обертка добавляет отступ слайдеру -->
-            <div class="qq">
+            <div class="qq" style="position: relative;">
                 <div class="arr-left">←</div>
                 <div class="arr-right">←</div>
                 <!-- обертка слайдера картиинок, каждой картинке вписать свой src -->
                 <div class="slider-wrapper">
-                    <img src="https://source.unsplash.com/random/800x600" />
-                    <img src="https://source.unsplash.com/random/800x600" />
+                ';
+                foreach ($data as $key => $item) {
+                    $html .= '
+                        <div>
+                            <!-- заголовок айтема -->
+                            ';
+                        if ($item['name']) {
+                            $html .= '<p class="item-title">'.$item['name'].'</p>';
+                        }
+                        if ($item['price']) {
+                            $html .= '<p class="price">'.$item['price'].'</p>';
+                        }
+                        if ($item['image']) {
+                            $html .= '<img src="http://localhost:8000/'.$item['image'].'" style="max-width: 100%; margin: auto" />';
+                        }
+                        if ($item['descrip']) {
+                            $html .= '
+                                <!-- серый текст описаниия товара -->
+                                <p class="description" style="margin-top: 20px">'.$item['descrip'].'</p>
+                            ';
+                        }
+                    $html .= '
+                        <div class="flex-wrapper">
+                    ';
+                        if ($item['buy_link']) {
+                            $html .= '<a href="'.$item['buy_link'].'" class="tn-atom" style="flex: '.($item['ar_link'] ? '1' : '0.5').'"><span>BY</span></a>';
+                        }
+                        if ($item['ar_link']) {
+                            $html .= '
+                                <a
+                                href="'.$item['ar_link'].'"
+                                target="_blank"
+                                class="tn-atom__image"
+                                style="margin: 0; margin-left: 0px; display: flex; justify-content: center;"
+                                >
+                                    <img
+                                        class="tn-atom__img"
+                                        src="https://d2gp3uv98k6j5c.cloudfront.net/assets/tours/files/00/00/24/9280-2c3024/images/tild3061-6266-4661-b064-623333363137__group_187.svg"
+                                        imgfield="tn_img_1596555954093"/>
+                                </a>
+                            ';
+                        }
+                    $html .= '
+                        </div>
+                    ';
+                    if ($item['preorder_link']) {
+                        $html .= '
+                            <!-- обертка если одна кнопка (к ссылке добавляется style="flex: 0.5") -->
+                            <div class="flex-wrapper">
+                                <a
+                                    href="'.$item['preorder_link'].'"
+                                    class="tn-atom"
+                                    style="flex: 0.5"
+                                    ><span>PREORDER</span></a
+                                >
+                            </div>
+                        ';
+                    }
+                    if ($item['coming']) {
+                        $html .= '<p class="coming">COMING SOON</p>';
+                    }
+                    $html .= '
+                        </div>
+                    ';
+                }
+                $html .='
                 </div>
             </div>
-            <!-- серый текст описаниия товара -->
-            <p class="description">
-                Powder-coated metal screen and hanger with textile pocket-shaped
-                storaging
-            </p>
-            <!-- обертка если две кнопки -->
-            <div class="flex-wrapper">
-                <a href="#order:STOOL BLUE C =200;" class="tn-atom"
-                    ><span>BY</span></a
-                >
-                <a
-                    href="https://vladmdgolam.github.io/chair/"
-                    target="_blank"
-                    class="tn-atom__image"
-                    ><img
-                        class="tn-atom__img"
-                        src="https://d2gp3uv98k6j5c.cloudfront.net/assets/tours/files/00/00/24/9280-2c3024/images/tild3061-6266-4661-b064-623333363137__group_187.svg"
-                        imgfield="tn_img_1596555954093"
-                /></a>
-            </div>
-            <!-- обертка если одна кнопка (к ссылке добавляется style="flex: 0.5") -->
-            <div class="flex-wrapper">
-                <a
-                    href="#order:STOOL BLUE C =200;"
-                    class="tn-atom"
-                    style="flex: 0.5"
-                    ><span>BY</span></a
-                >
-            </div>
-
-            <!-- обертка с текстом coming soon -->
-            <p class="coming">COMING SOON</p>
         </div>
         ';
         $html .= "
@@ -358,6 +389,7 @@ class SiteController extends Controller
                 $(".slider-wrapper").slick({
                     prevArrow: $(".arr-left"),
                     nextArrow: $(".arr-right"),
+                    fade: true,
                 });
             });
             </script>
@@ -372,10 +404,28 @@ class SiteController extends Controller
                 $(".slider-wrapper").slick({
                     prevArrow: $(".arr-left"),
                     nextArrow: $(".arr-right"),
+                    fade: true,
                 });
             });
-
         ';
+        if ($download) {
+            // header('Content-Disposition: attachment; filename="code.html"');
+            // print $html;
+            $file = "test.txt";
+            $txt = fopen($file, "w") or die("Unable to open file!");
+            fwrite($txt, $html);
+            fclose($txt);
+
+            header('Content-Description: File Transfer');
+            header('Content-Disposition: attachment; filename='.basename($file));
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($file));
+            header("Content-Type: text/plain");
+            readfile($file);
+        } else {
+        }
         return $this->asJson(['html' => $html, 'script' => $script]);
         // echo $html;
         // var_dump($data);

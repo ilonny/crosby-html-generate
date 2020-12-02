@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 // import { Layout, Menu, Breadcrumb } from "antd";
+import download from "downloadjs";
+import { Upload, Checkbox, Modal } from "antd";
 import {
     LoadingOutlined,
     PlusOutlined,
@@ -23,6 +25,9 @@ export const HomePage = () => {
                 setItems(res);
             });
     };
+    const [htmlPreview, setHtmlPreview] = useState("");
+    const [modalIsVisible, setModalIsVisible] = useState(false);
+
     useEffect(() => {
         getData();
     }, []);
@@ -92,6 +97,7 @@ export const HomePage = () => {
                     {items.map((item) => {
                         let data = JSON.parse(item.data);
                         data = data[0];
+                        let rawData = JSON.parse(item.data);
                         console.log("data", data);
                         return (
                             <div key={item.id}>
@@ -161,7 +167,36 @@ export const HomePage = () => {
                                                 background: "#F7F7F7",
                                                 marginLeft: 20,
                                             }}
-                                            onClick={() => {}}
+                                            onClick={() => {
+                                                setModalIsVisible(true);
+                                                fetch(
+                                                    `${API_HOST}/site/get-html`,
+                                                    {
+                                                        method: "POST",
+                                                        cors: true,
+                                                        body: JSON.stringify({
+                                                            data: rawData,
+                                                        }),
+                                                        // headers: {
+                                                        //     "Content-Type": "application/json",
+                                                        // },
+                                                    }
+                                                )
+                                                    .then((res) => res.json())
+                                                    .then((res) => {
+                                                        console.log(
+                                                            "html res",
+                                                            res
+                                                        );
+                                                        setHtmlPreview(
+                                                            res.html
+                                                        );
+                                                        const sc = new Function(
+                                                            res.script
+                                                        );
+                                                        sc();
+                                                    });
+                                            }}
                                         >
                                             <EyeOutlined />
                                             <span style={{ paddingLeft: 10 }}>
@@ -178,7 +213,23 @@ export const HomePage = () => {
                                                 background: "#F7F7F7",
                                                 marginLeft: 20,
                                             }}
-                                            onClick={() => {}}
+                                            onClick={() => {
+                                                fetch(
+                                                    `${API_HOST}/site/get-html?download=1`,
+                                                    {
+                                                        method: "POST",
+                                                        cors: true,
+                                                        body: JSON.stringify({
+                                                            data: rawData,
+                                                        }),
+                                                    }
+                                                )
+                                                    .then((res) => res.blob())
+                                                    .then((res) => {
+                                                        download(res);
+                                                        // console.log("html res", res);
+                                                    });
+                                            }}
                                         >
                                             <CodepenOutlined />
                                             <span style={{ paddingLeft: 10 }}>
@@ -212,6 +263,20 @@ export const HomePage = () => {
                     })}
                 </div>
             </div>
+            <Modal
+                title="Preview"
+                visible={modalIsVisible}
+                onCancel={() => {
+                    setHtmlPreview("");
+                    setModalIsVisible(false);
+                }}
+                onOk={() => {
+                    setHtmlPreview("");
+                    setModalIsVisible(false);
+                }}
+            >
+                <div dangerouslySetInnerHTML={{ __html: htmlPreview }} />
+            </Modal>
         </>
     );
 };
