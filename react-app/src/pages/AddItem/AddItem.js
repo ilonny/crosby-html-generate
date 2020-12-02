@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // import { Layout, Menu, Breadcrumb } from "antd";
 import { useParams } from "react-router-dom";
-import { Upload, Checkbox } from "antd";
+import { Upload, Checkbox, Modal } from "antd";
 import {
     LoadingOutlined,
     PlusOutlined,
@@ -35,7 +35,8 @@ export const AddItem = (props) => {
     };
     const [items, setItems] = useState([{ ...initialItem }]);
     const [imageLoading, setImageLoading] = useState(false);
-
+    const [modalIsVisible, setModalIsVisible] = useState(false);
+    const [htmlPreview, setHtmlPreview] = useState("");
     const uploadButton = (
         <div>
             {imageLoading ? <LoadingOutlined /> : <PlusOutlined />}
@@ -453,7 +454,34 @@ export const AddItem = (props) => {
                                 background: "#F7F7F7",
                                 marginLeft: 20,
                             }}
-                            onClick={() => {}}
+                            onClick={() => {
+                                setModalIsVisible(true);
+                                fetch(`${API_HOST}/site/get-html`, {
+                                    method: "POST",
+                                    cors: true,
+                                    body: JSON.stringify({
+                                        data: items,
+                                    }),
+                                    // headers: {
+                                    //     "Content-Type": "application/json",
+                                    // },
+                                })
+                                    .then((res) => res.json())
+                                    .then((res) => {
+                                        console.log("html res", res);
+                                        setHtmlPreview(res.html);
+                                        const sc = new Function(res.script);
+                                        sc();
+                                        // eval(res.script);
+                                        // if (res.id) {
+                                        //     console.log("redirect");
+                                        //     alert("successful saved");
+                                        //     props.history.push(
+                                        //         "/add-item/" + res.id
+                                        //     );
+                                        // }
+                                    });
+                            }}
                         >
                             <EyeOutlined />
                             <span style={{ paddingLeft: 10 }}>PREVIEW</span>
@@ -512,6 +540,20 @@ export const AddItem = (props) => {
                     </div>
                 </div>
             </div>
+            <Modal
+                title="Preview"
+                visible={modalIsVisible}
+                onCancel={() => {
+                    setHtmlPreview("");
+                    setModalIsVisible(false);
+                }}
+                onOk={() => {
+                    setHtmlPreview("");
+                    setModalIsVisible(false);
+                }}
+            >
+                <div dangerouslySetInnerHTML={{ __html: htmlPreview }} />
+            </Modal>
         </>
     );
 };
