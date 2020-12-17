@@ -11,6 +11,9 @@ import {
     CopyOutlined,
     EyeOutlined,
     CodepenOutlined,
+    ArrowLeftOutlined,
+    ArrowUpOutlined,
+    ArrowDownOutlined,
 } from "@ant-design/icons";
 
 // const { SubMenu } = Menu;
@@ -71,6 +74,33 @@ export const AddItem = (props) => {
     return (
         <>
             <div style={{ maxWidth: 1159, margin: "auto" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <button
+                        style={{
+                            width: 120,
+                            height: 50,
+                            borderRadius: 50,
+                            border: "none",
+                            cursor: "pointer",
+                            background: "#FFECEB",
+                            marginBottom: 20,
+                        }}
+                        onClick={() => {
+                            props.history.push("/");
+                        }}
+                    >
+                        <ArrowLeftOutlined />
+                        <span style={{ paddingLeft: 10 }}>Go back</span>
+                    </button>
+                    {/* <p>{'&lt;br/&gt;>'} - отступ в тексте</p> */}
+                    <p>{"<br />"} - отступ в тексте</p>
+                </div>
                 {items.map((item, index) => {
                     return (
                         <div
@@ -123,6 +153,53 @@ export const AddItem = (props) => {
                                         uploadButton
                                     )}
                                 </Upload>
+                                <div style={{ marginLeft: 0 }}>
+                                    <h2>AR file</h2>
+                                    <Upload
+                                        name={`ar_link`}
+                                        listType="picture-card"
+                                        className="avatar-uploader"
+                                        showUploadList={false}
+                                        action={`${API_HOST}/site/upload`}
+                                        style={{ width: "auto" }}
+                                        onChange={(info) => {
+                                            if (
+                                                info.file.status === "uploading"
+                                            ) {
+                                                setImageLoading(true);
+                                                return;
+                                            }
+                                            if (info.file.status === "done") {
+                                                setImageLoading(false);
+                                                console.log("res", info);
+                                                changeItem(
+                                                    index,
+                                                    "ar_link",
+                                                    info.file.name
+                                                );
+                                            }
+                                        }}
+                                    >
+                                        {item.ar_link ? (
+                                            <button>{item.ar_link}</button>
+                                        ) : (
+                                            <button>upload AR file</button>
+                                        )}
+                                    </Upload>
+                                    {item.ar_link && (
+                                        <button
+                                            onClick={() => {
+                                                changeItem(
+                                                    index,
+                                                    "ar_link",
+                                                    null
+                                                );
+                                            }}
+                                        >
+                                            delete AR file
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <div
                                 style={{
@@ -133,7 +210,56 @@ export const AddItem = (props) => {
                                     // borderRadius: 10,
                                 }}
                             >
-                                <h2>About product</h2>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        marginBottom: 20,
+                                    }}
+                                >
+                                    <h2>About product</h2>
+                                    <div>
+                                        <button
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                marginRight: 15,
+                                            }}
+                                            onClick={() => {
+                                                if (items[index - 1]) {
+                                                    let it = [...items];
+                                                    let temp = item;
+                                                    it[index] =
+                                                        items[index - 1];
+                                                    it[index - 1] = temp;
+                                                    setItems(it);
+                                                }
+                                            }}
+                                        >
+                                            <ArrowUpOutlined />
+                                        </button>
+                                        <button
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                marginRight: 15,
+                                            }}
+                                            onClick={() => {
+                                                if (items[index + 1]) {
+                                                    let it = [...items];
+                                                    let temp = item;
+                                                    it[index] =
+                                                        items[index + 1];
+                                                    it[index + 1] = temp;
+                                                    setItems(it);
+                                                }
+                                            }}
+                                        >
+                                            <ArrowDownOutlined />
+                                        </button>
+                                    </div>
+                                </div>
                                 <div style={{ marginTop: 0 }}>
                                     <div style={{ display: "flex" }}>
                                         <div
@@ -310,7 +436,7 @@ export const AddItem = (props) => {
                                                     marginLeft: 20,
                                                 }}
                                             />
-                                            <input
+                                            {/* <input
                                                 placeholder="AR link"
                                                 style={{
                                                     background: "#F7F7F7",
@@ -328,7 +454,8 @@ export const AddItem = (props) => {
                                                     );
                                                 }}
                                                 value={item.ar_link}
-                                            />
+                                            /> */}
+
                                             <Checkbox
                                                 // checked={this.state.checked}
                                                 // disabled={this.state.disabled}
@@ -508,7 +635,7 @@ export const AddItem = (props) => {
                                 })
                                     .then((res) => res.blob())
                                     .then((res) => {
-                                        download(res);
+                                        download(res, items[0].name);
                                         // console.log("html res", res);
                                     });
                             }}
@@ -523,7 +650,7 @@ export const AddItem = (props) => {
                                 borderRadius: 50,
                                 border: "none",
                                 cursor: "pointer",
-                                background: "#F7F7F7",
+                                background: "#031ee8",
                                 marginLeft: 20,
                             }}
                             onClick={() => {
@@ -550,7 +677,9 @@ export const AddItem = (props) => {
                                     });
                             }}
                         >
-                            <span style={{ paddingLeft: 0 }}>SAVE</span>
+                            <span style={{ paddingLeft: 0, color: "#fff" }}>
+                                SAVE
+                            </span>
                         </button>
                     </div>
                 </div>

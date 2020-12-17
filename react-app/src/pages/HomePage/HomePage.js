@@ -226,7 +226,7 @@ export const HomePage = () => {
                                                 )
                                                     .then((res) => res.blob())
                                                     .then((res) => {
-                                                        download(res);
+                                                        download(res, data.name);
                                                         // console.log("html res", res);
                                                     });
                                             }}

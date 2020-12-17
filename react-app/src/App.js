@@ -14,18 +14,19 @@ import { Layout } from "antd";
 import { Header } from "./features/header";
 
 // const { SubMenu } = Menu;
-const { Content, } = Layout;
+const { Content } = Layout;
+
 const _MainComp = () => {
     // console.log("props", props);
     return (
         <>
             <Normalize />
             <GlobalStyles />
-            <Layout style={{ flex: 1, background: '#fff' }}>
-                <Layout style={{background: '#fff'}}>
+            <Layout style={{ flex: 1, background: "#fff" }}>
+                <Layout style={{ background: "#fff" }}>
                     <Header />
                 </Layout>
-                <Layout style={{background: '#fff'}}>
+                <Layout style={{ background: "#fff" }}>
                     <Content style={{ padding: 30 }}>
                         <Routes />
                     </Content>
